@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "709030195522",
+    "project_id": "pembinaan-7408d",
+    "storage_bucket": "pembinaan-7408d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:709030195522:android:91843c14e1f0ea90cc98db",
+        "android_client_info": {
+          "package_name": "com.example.frontend2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClIX1WEm-2rTCXedY6kfBrG7etZXa97nw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
