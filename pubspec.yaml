@@ -53,6 +53,17 @@ dependencies:
   permission_handler: ^11.3.0
   firebase_core: ^2.27.1
   firebase_storage: ^11.6.10
+  json_annotation: ^4.8.1
+  http: ^1.2.1
+  shared_preferences: ^2.2.2
+  convert_native_img_stream: ^0.0.1
+  toastification: ^1.2.1
+  horizontal_data_table: ^4.3.1
+  image_picker: ^1.0.7
+  patterns_canvas: ^0.4.0
+  get: ^4.6.6
+  flutter_animate: ^4.5.0
+  flutter_widget_from_html: ^0.15.1
 
 dev_dependencies:
   flutter_test:
@@ -64,6 +75,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^3.0.0
+  build_runner: ^2.4.8
+  json_serializable: ^6.7.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -108,3 +121,4 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+  #

@@ -1,33 +1,36 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:magang_absen/firebase_options.dart';
+import 'package:magang_absen/models/anggota.dart';
 import 'package:magang_absen/pages/home_page.dart';
-import 'package:magang_absen/locator.dart';
+import 'package:magang_absen/pages/profile_page.dart';
+import 'package:magang_absen/services/utils.dart';
+import 'package:magang_absen/widgets/splash_widget.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 import 'package:flutter_login/flutter_login.dart';
 
+var globalState = GlobalKey<NavigatorState>();
+
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  setupServices();
   runApp(
-    MaterialApp(
+    GetMaterialApp(
+      navigatorKey: globalState,
+      defaultTransition: Transition.cupertino,
       debugShowCheckedModeBanner: false,
       theme: ThemeData.from(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
       ),
-      home: const LoginPage(),
+      home: const SplashWidget(),
     ),
   );
 }
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  const LoginPage({
+    super.key,
+    this.anggota,
+  });
+  final Anggota? anggota;
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +39,19 @@ class LoginPage extends StatelessWidget {
       logoTag: 'logo',
       titleTag: 'title',
       hideForgotPasswordButton: true,
+      savedEmail: anggota?.username ?? '',
+      savedPassword: anggota?.password ?? '',
       logo: const AssetImage('assets/icon.png'),
       userType: LoginUserType.name,
       userValidator: (v) => null,
       passwordValidator: (v) => null,
-      onLogin: (v) => null,
+      onLogin: (v) async {
+        var anggota = Anggota(username: v.name, password: v.password);
+        var res = await authenticate(anggota);
+        if (res.anggota == null) return res.message;
+        saveCred(anggota);
+        return null;
+      },
       onRecoverPassword: (v) => null,
       onSubmitAnimationCompleted: () {
         Navigator.pushReplacement(
@@ -64,30 +75,7 @@ class Main extends StatefulWidget {
 class _MainState extends State<Main> {
   List<Widget> screens = [
     const HomePage(),
-    CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          leading: IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.arrow_right),
-          ),
-          pinned: true,
-          title: const Text("Notif Masuk"),
-        ),
-      ],
-    ),
-    CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          leading: IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.arrow_right),
-          ),
-          pinned: true,
-          title: const Text("Profile"),
-        ),
-      ],
-    ),
+    const ProfilePage(),
   ];
   int _pageIndex = 0;
 
@@ -111,10 +99,6 @@ class _MainState extends State<Main> {
             SalomonBottomBarItem(
               icon: const Icon(Icons.home),
               title: const Text("Home"),
-            ),
-            SalomonBottomBarItem(
-              icon: const Icon(Icons.notifications),
-              title: const Text("Notifications"),
             ),
             SalomonBottomBarItem(
               icon: const Icon(Icons.person),

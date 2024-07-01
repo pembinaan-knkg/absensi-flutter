@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:magang_absen/locator.dart';
 import 'package:magang_absen/painter/face_detector_painter.dart';
 import 'package:magang_absen/services/face_detector_service.dart';
+import 'package:magang_absen/services/utils.dart';
 
 class FaceDetectorView extends StatefulWidget {
   const FaceDetectorView({
@@ -30,7 +32,6 @@ class _FaceDetectorState extends State<FaceDetectorView> {
 
   @override
   void initState() {
-    debugPrint("FaceDetectorView initState");
     availableCameras().then((cameras) {
       if (mounted) {
         _cameras = cameras;
@@ -51,9 +52,7 @@ class _FaceDetectorState extends State<FaceDetectorView> {
   }
 
   void _onStream(CameraImage image) {
-    // print("_onStream");
     if (_detectorService.isProcessing) {
-      // debugPrint("_detectorService is processingImage");
       return;
     }
     _detectorService.detecFacesFromImage(image, _cameraController!);
@@ -75,6 +74,7 @@ class _FaceDetectorState extends State<FaceDetectorView> {
   Future _startLiveFeed(CameraLensDirection lensDirection) async {
     _camera = _cameras
         .firstWhere((element) => element.lensDirection == lensDirection);
+    _camera = _camera ?? _cameras.first;
     _cameraController = CameraController(
       _camera!,
       ResolutionPreset.medium,
@@ -136,66 +136,71 @@ class _FaceDetectorState extends State<FaceDetectorView> {
             ),
           ),
         ),
-        Positioned(
-          top: 60,
-          left: 10,
-          child: SizedBox.square(
-            dimension: 55,
-            child: FloatingActionButton(
-              heroTag: Object(),
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Icon(Icons.arrow_back_ios_outlined),
-            ),
-          ),
-        ),
-        Positioned(
-          top: 60,
-          left: 10 * 2 + 55,
-          child: SizedBox.square(
-            dimension: 55,
-            child: FloatingActionButton(
-              heroTag: Object(),
-              onPressed: () {
-                setState(() {
-                  _showSettings = !_showSettings;
-                });
-              },
-              child: const Icon(Icons.settings),
-            ),
-          ),
-        ),
         ..._createSettings(),
       ],
     );
   }
 
   List<Widget> _createSettings() {
-    if (!_showSettings) return [];
-    return [
-      Positioned(
-        bottom: 10,
-        right: 10,
-        child: FloatingActionButton(
-          onPressed: _toggleCameras,
-          child: const Icon(
-            Icons.rotate_left,
-            color: Colors.blueAccent,
+    if (!_showSettings) {
+      return [
+        Positioned(
+          right: 10,
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox.square(
+                  dimension: 55,
+                  child: FloatingActionButton(
+                    heroTag: Object(),
+                    onPressed: () {
+                      setState(() {
+                        _showSettings = !_showSettings;
+                      });
+                    },
+                    child: const Icon(Icons.settings),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      )
+      ];
+    }
+
+    return [
+      Positioned(
+        right: 10,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox.square(
+                dimension: 55,
+                child: FloatingActionButton(
+                  heroTag: Object(),
+                  onPressed: () {
+                    setState(() {
+                      _showSettings = !_showSettings;
+                    });
+                  },
+                  child: const Icon(Icons.settings),
+                ),
+              ),
+              const Gap(10),
+              FloatingActionButton(
+                onPressed: _toggleCameras,
+                child: const Icon(
+                  Icons.rotate_left,
+                  color: Colors.blueAccent,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     ];
   }
 
-  InputImageRotation rotationIntToImageRotation(int rotation) {
-    switch (rotation) {
-      case 90:
-        return InputImageRotation.rotation90deg;
-      case 180:
-        return InputImageRotation.rotation180deg;
-      case 270:
-        return InputImageRotation.rotation270deg;
-      default:
-        return InputImageRotation.rotation0deg;
-    }
-  }
 }

@@ -1,171 +1,203 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:get/get.dart';
+import 'package:horizontal_data_table/horizontal_data_table.dart';
+import 'package:magang_absen/models/list_absen_response.dart';
+import 'package:magang_absen/services/api_services.dart';
+import 'package:magang_absen/services/utils.dart';
 
-enum RekapType {
-  masuk,
-  pulang;
-}
-
-class RekapPage extends StatelessWidget {
+class RekapPage extends StatefulWidget {
   const RekapPage({
     super.key,
-    required this.rekapType,
   });
 
-  final RekapType rekapType;
+  @override
+  State<RekapPage> createState() => _RekapPageState();
+}
+
+class _RekapPageState extends State<RekapPage> {
+  final _api = ApiServices.to();
+  List<InfoAbsen>? absensi;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Rekap Absen"),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Material(
-            shape: RoundedRectangleBorder(
-              side: BorderSide(color: Colors.black54, width: 1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Table(
-              border: TableBorder.symmetric(
-                inside: BorderSide(color: Colors.black54, width: 1),
-              ),
-              columnWidths: const {
-                0: IntrinsicColumnWidth(),
-                1: FlexColumnWidth(),
-                2: FlexColumnWidth(),
-                3: FlexColumnWidth(),
-              },
-              children: [
-                TableRow(
-                  decoration: BoxDecoration(
-                    color: Colors.lightBlue,
-                  ),
-                  children: [
-                    _tableCell(Text(
-                      "No",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    )),
-                    _tableCell(Text(
-                      "Tanggal",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    )),
-                    _tableCell(Text(
-                      "Masuk",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    )),
-                    _tableCell(Text(
-                      "Pulang",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                    )),
-                  ],
-                ),
-                for (int i = 0; i < 40; i++)
-                  if (_dateNotInFridayandSunday(
-                      DateTime.now().subtract(Duration(days: i))))
-                    TableRow(
-                      children: [
-                        _tableCell(Text("${i + 1}")),
-                        _tableCell(Text(_dateToString(
-                            DateTime.now().subtract(Duration(days: i))))),
-                        _tableCellTimeMasuk(generateRandomTime(7, 8)),
-                        _tableCellTimePulang(generateRandomTime(16, 17)),
-                      ],
-                    )
-              ],
-            ),
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
+  Future _refresh() async {
+    var r = await _api.getAbsensi(_api.user!);
+    if (mounted) {
+      if (!r.success) {
+        warnAlert(
+          context: context,
+          title: 'Absensi',
+          text: r.message,
+          onConfirm: () => Get.until((route) => route.isFirst),
+        );
+        return;
+      }
+      setState(() {
+        absensi = r.data;
+      });
+    }
+  }
+
+  Widget _item(
+    String text, {
+    double? width,
+    double? height,
+    TextStyle? textStyle,
+  }) {
+    return SizedBox(
+      width: width ?? 100,
+      height: height ?? 50,
+      child: Center(
+        child: SingleChildScrollView(
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: textStyle,
           ),
         ),
       ),
     );
   }
 
-  bool _dateNotInFridayandSunday(DateTime date) {
-    return date.weekday != DateTime.friday && date.weekday != DateTime.sunday;
-  }
-
-  Widget _tableCell(Widget child) {
-    return TableCell(
-      child: Padding(
-        padding: EdgeInsets.all(10),
-        child: child,
-      ),
-    );
-  }
-
-  Widget _tableCellTimeMasuk(DateTime time) {
-    bool late = time.hour == 8 ? time.minute >= 0 : time.hour > 8;
-    return TableCell(
-      child: Container(
-        color: late ? Colors.red : Colors.white,
-        child: Padding(
-          padding: EdgeInsets.all(10),
-          child: Text(DateFormat.Hm().format(time)),
+  @override
+  Widget build(BuildContext context) {
+    if (absensi == null) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
         ),
-      ),
-    );
-  }
-
-  Widget _tableCellTimePulang(DateTime time) {
-    return TableCell(
-      child: Container(
-        color: time.hour < 16 ? Colors.red : Colors.white,
-        child: Padding(
-          padding: EdgeInsets.all(10),
-          child: Text(DateFormat.Hm().format(time)),
-        ),
-      ),
-    );
-  }
-
-  String _dateToString(DateTime date) {
-    return DateFormat.yMMMd().format(date);
-  }
-
-  String _randomTimeMasuk() {
-    return DateFormat.Hm().format(generateRandomTime(7, 8));
-  }
-
-  String _randomTimePulang() {
-    return DateFormat.Hm().format(generateRandomTime(16, 17));
-  }
-
-  DateTime generateRandomTime(int startHour, int endHour) {
-    Random random = Random();
-    int hour = random.nextInt(endHour - startHour) + startHour;
-    int minute = random.nextInt(60); // Random minute between 0 and 59
-    return DateTime(0, 1, 1, hour,
-        minute); // Date doesn't matter, just using 0 for year, 1 for month, and 1 for day
-  }
-
-  DateTime generateRandomTimeWithProbability(
-      int lowHour, int highHour, double highProbability) {
-    Random random = Random();
-    int hour;
-    int minute;
-
-    // Check if the generated hour should be in the higher probability range
-    if (random.nextDouble() < highProbability) {
-      // Higher probability range
-      hour = random.nextInt((highHour - lowHour) ~/ 2) + lowHour;
-    } else {
-      // Lower probability range
-      hour = random.nextInt(1) + highHour;
+      );
     }
 
-    minute = random.nextInt(60); // Random minute between 0 and 59
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Rekap Absen'),
+        automaticallyImplyLeading: true,
+      ),
+      body: HorizontalDataTable(
+        leftHandSideColumnWidth: 100,
+        rightHandSideColumnWidth: 100 * 4,
+        isFixedHeader: true,
+        rowSeparatorWidget: const Divider(
+          color: Colors.black45,
+          height: 1,
+          thickness: 0,
+        ),
+        headerWidgets: _headers,
+        leftSideChildren: [
+          for (var absen in absensi ?? <InfoAbsen>[])
+            _item(formatTanggal(absen.tanggal.toLocal())),
+        ],
+        rightSideChildren: [
+          for (var absen in absensi ?? <InfoAbsen>[])
+            Row(
+              children: [
+                _item(
+                  formatJam(absen.masuk?.time.toLocal()),
+                  textStyle: TextStyle(
+                    color: checkStatusMasukTerlambat(absen) ? Colors.red : null,
+                  ),
+                ),
+                _item(
+                  formatJam(absen.pulang?.time.toLocal()),
+                  textStyle: TextStyle(
+                    color: checkStatusPulangCepat(absen) ? Colors.red : null,
+                  ),
+                ),
+                _item(absen.note),
+                _item(absen.ket ?? "-"),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
 
-    return DateTime(0, 1, 1, hour, minute);
+  List<Widget> get _headers {
+    return [
+      _item(
+        'Tanggal',
+        textStyle: TextStyle(
+          color: Colors.lightBlue,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      _item(
+        'Masuk',
+        textStyle: TextStyle(
+          color: Colors.lightBlue,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      _item(
+        'Pulang',
+        textStyle: TextStyle(
+          color: Colors.lightBlue,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      _item(
+        'Note',
+        textStyle: TextStyle(
+          color: Colors.lightBlue,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      _item(
+        'Ket',
+        textStyle: TextStyle(
+          color: Colors.lightBlue,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ];
+  }
+
+  bool checkStatusMasukTerlambat(InfoAbsen absen) {
+    if (absen.masuk == null) return false;
+    var day = absen.tanggal.toLocal().copyWith(
+          hour: 8,
+          minute: 0,
+          second: 0,
+          millisecond: 0,
+          microsecond: 0,
+          isUtc: false,
+        );
+    return absen.masuk!.time
+        .toLocal()
+        .copyWith(
+          second: 0,
+          millisecond: 0,
+          microsecond: 0,
+          isUtc: false,
+        )
+        .isAfter(day);
+  }
+
+  bool checkStatusPulangCepat(InfoAbsen absen) {
+    if (absen.pulang == null) return false;
+    var day = absen.tanggal.toLocal().copyWith(
+          hour: 16,
+          minute: 0,
+          second: 0,
+          millisecond: 0,
+          microsecond: 0,
+          isUtc: false,
+        );
+    return absen.pulang!.time
+        .toLocal()
+        .copyWith(
+          second: 0,
+          millisecond: 0,
+          microsecond: 0,
+          isUtc: false,
+        )
+        .isBefore(day);
   }
 }

@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
+import 'package:magang_absen/locator.dart';
 
 class CameraService {
   CameraController? _cameraController;
@@ -11,6 +12,9 @@ class CameraService {
 
   InputImageRotation? _cameraRotation;
   InputImageRotation? get cameraRotation => _cameraRotation;
+
+  int _rotation = 0;
+  int get rotation => _rotation;
 
   CameraDescription? _cameraDescription;
   CameraDescription? get cameraDescription => _cameraDescription;
@@ -27,6 +31,8 @@ class CameraService {
   String? _imagePath;
   String? get imagePath => _imagePath;
 
+  static CameraService to()=> locator();
+
   void init() async {}
 
   Future<void> initialize({
@@ -38,6 +44,7 @@ class CameraService {
       lensDirection: lensDirection,
     );
     await _setupCameraController(description: description);
+    _rotation = description.sensorOrientation;
     _cameraRotation = rotationIntToImageRotation(
       description.sensorOrientation,
     );

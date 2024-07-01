@@ -17,14 +17,21 @@ class TargetLocation {
 class LocationServices extends Listenable {
   Position? _currentLocation;
   Position? get currentLocation => _currentLocation;
+  bool _inRadius = false;
+  bool get inRadius => _inRadius;
 
   Future init() async {
     if (await initPermission()) {
       Geolocator.getPositionStream(
-          locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.best,
-      )).listen((event) {
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.best,
+        ),
+      ).listen((event) {
         _currentLocation = event;
+        _inRadius = isInRadius();
+        debugPrint('inRadius $inRadius');
+      }).onError((error) {
+        debugPrint(error.toString());
       });
     }
   }
@@ -53,8 +60,7 @@ class LocationServices extends Listenable {
 
   Future<void> refreshLocation() async {
     _currentLocation = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-      forceAndroidLocationManager: true,
+      desiredAccuracy: LocationAccuracy.best,
       timeLimit: const Duration(seconds: 6),
     );
     for (var listener in _listener) {
@@ -75,7 +81,8 @@ class LocationServices extends Listenable {
       target.latitude,
       target.longitude,
     );
-    return distanceInMeters <= target.radiusInMeter;
+    _inRadius = distanceInMeters <= target.radiusInMeter;
+    return _inRadius;
   }
 
   void reset() {
