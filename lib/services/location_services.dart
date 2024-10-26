@@ -72,6 +72,7 @@ class LocationServices extends Listenable {
     TargetLocation target = TargetLocation(
       latitude: 0.5768536590137682,
       longitude: 123.06104024942378,
+      
       radiusInMeter: 50,
     );
     assert(_currentLocation != null, "location is not avaible");

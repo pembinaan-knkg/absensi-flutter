@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/get.dart';
 import 'package:magang_absen/locator.dart';
@@ -15,6 +15,7 @@ import 'package:magang_absen/models/request.dart';
 import 'package:http/http.dart' as http;
 
 const servers = [
+  "http://localhost:5173",
   "http://192.168.1.30:5173", //bin-network
   "http://192.168.0.134:5173", //Pidum-network
   "http://10.180.93.125:5173", //L1lyKost
@@ -44,6 +45,7 @@ class ApiServices {
     try {
       var req = Request(method: type, data: absen);
       var json = jsonEncode(req.toJson());
+      debugPrint(json);
       var res = await http
           .post(
             Uri.parse("$server/api/absen"),
@@ -80,7 +82,7 @@ class ApiServices {
           )
           .timeout(const Duration(seconds: 5));
       if ((res.headers["content-type"]?.contains("text/html") ?? false) && showHtml) {
-        Get.to(HtmlWidget(res.body));
+        Get.to(Scaffold(body: HtmlWidget(res.body)));
       }
       var jsonr = jsonDecode(res.body);
       var authResponse = AuthResponse.fromJson(jsonr);
@@ -105,7 +107,7 @@ class ApiServices {
         },
       ).timeout(const Duration(seconds: 5));
       if ((res.headers["content-type"]?.contains("text/html") ?? false) && showHtml) {
-        Get.to(HtmlWidget(res.body));
+        Get.to(Scaffold(body: HtmlWidget(res.body)));
       }
       var jbody = jsonDecode(res.body);
       var data = ListAbsenResponse.fromJson(jbody);
@@ -128,7 +130,7 @@ class ApiServices {
         body: jsonEncode(request.toJson()),
       );
       if ((res.headers["content-type"]?.contains("text/html") ?? false) && showHtml) {
-        Get.to(HtmlWidget(res.body));
+        Get.to(Scaffold(body: HtmlWidget(res.body)));
       }
       var jbody = jsonDecode(res.body);
       var data = AnggotaUpdateResponse.fromJson(jbody);

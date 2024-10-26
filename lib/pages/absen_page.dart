@@ -46,10 +46,7 @@ class _AbsenPageState extends State<AbsenPage> {
   final bool _checkLocation = !kDebugMode;
 
   bool _notInRadius() {
-    return !_locationServices.inRadius &&
-        mounted &&
-        _checkLocation &&
-        _apiServices.userInfo!.satker != "Petugas Pengemudi";
+    return !_locationServices.inRadius && _checkLocation && _apiServices.userInfo!.satker != "Petugas Pengemudi";
   }
 
   @override
@@ -61,8 +58,7 @@ class _AbsenPageState extends State<AbsenPage> {
           warnAlert(
             context: context,
             title: "Gagal",
-            text:
-                "Anda Tidak Berada Dalam Wilayah Kejaksaan Negeri Kota Gorontalo",
+            text: "Anda Tidak Berada Dalam Wilayah Kejaksaan Negeri Kota Gorontalo",
             onConfirm: () {
               Get.until((route) => route.isFirst);
             },
@@ -148,7 +144,10 @@ class _AbsenPageState extends State<AbsenPage> {
       _showTimer = false;
       setState(() {});
       if (_success) {
-        _process2(takePict, image, ).onError((e, t) {
+        _process2(
+          takePict,
+          image,
+        ).onError((e, t) {
           debugPrintStack(stackTrace: t);
           warnAlert(
             preventBack: false,
@@ -211,8 +210,7 @@ class _AbsenPageState extends State<AbsenPage> {
         title: widget.type == Method.masuk ? 'Absen Masuk' : 'Absen Pulang',
         text: res.message,
         disableBackBtn: true,
-        onConfirmBtnTap: () =>
-            Navigator.popUntil(context, (route) => route.isFirst),
+        onConfirmBtnTap: () => Navigator.popUntil(context, (route) => route.isFirst),
       );
     }
   }
@@ -320,10 +318,8 @@ class FaceTimer extends StatefulWidget {
 
 class _FaceTimerState extends State<FaceTimer> with TickerProviderStateMixin {
   int _seconds = 1;
-  late final AnimationController _controller =
-      AnimationController(vsync: this, duration: const Duration(seconds: 1));
-  late final Animation<double> _textAnimation =
-      Tween(begin: 80.0, end: 40.0).animate(
+  late final AnimationController _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1));
+  late final Animation<double> _textAnimation = Tween(begin: 80.0, end: 40.0).animate(
     CurvedAnimation(
       parent: _controller,
       curve: Curves.fastLinearToSlowEaseIn,
